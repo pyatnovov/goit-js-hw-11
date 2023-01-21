@@ -7,7 +7,6 @@ import renderCard from './js/renderCard';
 const refs = {
   form: document.getElementById('search-form'),
   input: document.querySelector('[type=text]'),
-  submitBtn: document.querySelector('[type=submit]'),
   gallery: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
 };
@@ -17,7 +16,7 @@ let lightbox = new SimpleLightbox('.photo-card a', {
   captionDelay: 250,
 });
 
-refs.submitBtn.addEventListener('click', onSubmitBtnClick);
+refs.form.addEventListener('submit', onSubmitBtnClick);
 refs.loadMoreBtn.addEventListener('click', loadMore);
 refs.loadMoreBtn.classList.add('visually-hidden');
 function onSubmitBtnClick(e) {
@@ -28,30 +27,39 @@ function onSubmitBtnClick(e) {
     pictureService.value = refs.input.value;
 
     pictureService.resetPage();
-
-    lightbox.refresh();
-    pictureService.fetchPicture().then(array => {
-    if (array.length === 0) {
-    refs.loadMoreBtn.classList.add('visually-hidden');        
-      return Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-    }
-
-      pictureService.fetchPicture().then(apppendCardsMarkup);
-
-    if (pictureService.page === 2) {
-        refs.loadMoreBtn.classList.remove('visually-hidden');
-        Notify.success(
-          `Hooray! We found ${pictureService.totalHits} images.`
+    pictureService
+    .fetchPicture()
+    .then(array => {
+      apppendCardsMarkup(array);
+      lightbox.refresh();
+      if (array.length === 0) {
+        refs.loadMoreBtn.classList.add('visually-hidden');
+        return Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
         );
       }
 
+      if (pictureService.totalHits > 0) {
+        refs.loadMoreBtn.classList.remove('visually-hidden');
+        Notify.success(`Hooray! We found ${pictureService.totalHits} images.`);
+      }
+      if (
+        pictureService.totalHits <
+        pictureService.page * pictureService.per_page
+      ) {
+        refs.loadMoreBtn.classList.add('visually-hidden');
+        Notify.info(
+          "We're sorry, but you've reached the end of search results."
+        );
+      } 
     });
 }
 
-function loadMore() {
-  pictureService.fetchPicture().then(apppendCardsMarkup);
+async function loadMore() {
+  pictureService.incrementPage();
+  pictureService.fetchPicture().then(array => {
+    apppendCardsMarkup(array);
+  });
 }
 
 function apppendCardsMarkup(arr) {
@@ -61,3 +69,4 @@ function apppendCardsMarkup(arr) {
 function clearGallery() {
   refs.gallery.innerHTML = '';
 }
+

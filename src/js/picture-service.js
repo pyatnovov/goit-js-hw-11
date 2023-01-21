@@ -6,6 +6,7 @@ export default class pictureApiService {
     this.BASE_URL = 'https://pixabay.com/api/';
     this.page = 1;
     this.totalHits = 0;
+    this.per_page = 40;
   }
 
   async fetchPicture() {

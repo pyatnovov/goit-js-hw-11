@@ -58,7 +58,16 @@ function onSubmitBtnClick(e) {
 async function loadMore() {
   pictureService.incrementPage();
   pictureService.fetchPicture().then(array => {
-    apppendCardsMarkup(array);
+  apppendCardsMarkup(array);
+  if (
+    pictureService.totalHits <
+    pictureService.page * pictureService.per_page
+  ) {
+    refs.loadMoreBtn.classList.add('visually-hidden');
+    Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
+  } 
   });
 }
 

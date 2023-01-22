@@ -15,7 +15,6 @@ export default class pictureApiService {
     try {
       const response = await axios.get(url);
       const totalHits = response.data.totalHits;
-      this.incrementPage()
       this.totalHits = totalHits;
       return response.data.hits;
     } catch (error) {
